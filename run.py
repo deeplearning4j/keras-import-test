@@ -9,7 +9,6 @@ import time
 import keras
 
 
-_DISABLE_NUMERIC_TESTING = True
 
 jp.set_context_dtype('float32')
 
@@ -20,8 +19,6 @@ models_dir = os.path.join(current_dir, 'models')
 
 
 def numeric_test(keras_model, imported_model):
-    if _DISABLE_NUMERIC_TESTING:
-        return
     input_shape = keras_model.input_shape
     if isinstance(input_shape, list):
         raise Exception('Multi input models are not currently supported')
@@ -36,7 +33,7 @@ def numeric_test(keras_model, imported_model):
     for x in inputs:
         y_keras = keras_model.predict(x)
         y_sd = imported_model(x).numpy()
-        assert_allclose(y_sd, y_keras)
+        assert_allclose(y_sd, y_keras, 1e-5)
 
 
 def is_h5_file(file):
