@@ -2,6 +2,8 @@ import os
 import jumpy
 from keras2tf import keras_to_tf
 import click
+import time
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 models_dir = os.path.join(current_dir, 'models')
@@ -12,6 +14,8 @@ def is_h5_file(file):
         if os.path.isfile(file):
             return True
     return False
+
+
 
 
 models_to_test = []
@@ -28,8 +32,56 @@ for path in models_to_test:
 
 
 click.echo("Running tests...")
+overall_report = []
+num_passed = 0
+num_failed = 0
+start_time = time.time()
 
+errors = []
 with click.progressbar(models_to_test) as models:
     for model in models:
-        tf_pb = keras_to_tf(model)
-        tfmodel = jumpy.TFModel(tf_pb)
+        try:
+            tf_pb = keras_to_tf(model)
+        except Exception as e:
+            num_failed += 1
+            overall_report.append(click.style(model, fg='red'))
+            error = [model, "Failed during converting keras model to tensorflow protobuff.", e]
+            errors.append(error)
+            continue
+        try:
+            tfmodel = jumpy.TFModel(tf_pb)
+        except:
+            num_failed += 1
+            overall_report.append(click.style(model, fg='red'))
+            error = [model, "Failed during import tensorflow model to SameDiff.", e]
+            errors.append(error)
+            continue
+        num_passed += 1
+        overall_report.append(click.style(model, fg='green'))
+end_time = time.time()
+time_taken = end_time - start_time
+if errors:
+    color = 'red'
+    sm = ':('
+else:
+    color = 'green'
+    sm = ':)'
+
+
+overall_report.insert(0, click.style("{} tests run in {} seconds - {} passed, {} failed {}".format(len(models_to_test), 
+                                                                                                time_taken, num_passed, num_failed, sm), fg=color))
+overall_report.insert(1, click.style("\n", fg=color))
+print('')                                                                                 
+for x in overall_report:
+    click.echo(x)
+
+
+if errors:
+    print('\n')
+    click.secho("========= Errors =========", fg='red')
+    for err in errors:
+        print('')
+        click.secho(err[0], fg='red')
+        print('')
+        click.secho(err[1], fg='red')
+        click.secho(str(err[2]), fg='red')
