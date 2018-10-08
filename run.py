@@ -1,12 +1,38 @@
-import os
-import jumpy
 from keras2tf import keras_to_tf
+from numpy.testing import assert_allclose
+import os
+import jumpy as jp
+import numpy as np
+import tensorflow as tf
 import click
 import time
+import keras
+
+
+jp.set_context_dtype('float32')
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 models_dir = os.path.join(current_dir, 'models')
+
+
+
+def numeric_test(keras_model, imported_model):
+    input_shape = keras_model.input_shape
+    if isinstance(input_shape, list):
+        raise Exception('Multi input models are not currently supported')
+    input_shape = list(input_shape)
+    for i, d in enumerate(input_shape):
+        if d is None:
+            input_shape[i] = 32
+    inputs = []
+    inputs.append(np.zeros(input_shape, 'float32'))
+    inputs.append(np.ones(input_shape, 'float32'))
+    inputs.append(np.cast['float32'](np.random.random(input_shape)))
+    for x in inputs:
+        y_keras = keras_model.predict(x)
+        y_sd = imported_model(x).numpy()
+        assert_allclose(y_sd, y_keras)
 
 
 def is_h5_file(file):
@@ -14,8 +40,6 @@ def is_h5_file(file):
         if os.path.isfile(file):
             return True
     return False
-
-
 
 
 models_to_test = []
@@ -49,11 +73,22 @@ with click.progressbar(models_to_test) as models:
             errors.append(error)
             continue
         try:
-            tfmodel = jumpy.TFModel(tf_pb)
-        except:
+            imported_model = jp.TFModel(tf_pb)
+        except Exception as e:
             num_failed += 1
             overall_report.append(click.style(model, fg='red'))
             error = [model, "Failed during import tensorflow model to SameDiff.", e]
+            errors.append(error)
+            continue
+        try:
+            sess = tf.Session()
+            keras.backend.set_session(sess)
+            keras_model = keras.models.load_model(model)
+            numeric_test(keras_model, imported_model)
+        except Exception as e:
+            num_failed += 1
+            overall_report.append(click.style(model, fg='red'))
+            error = [model, "Failed during numeric testing.", e]
             errors.append(error)
             continue
         num_passed += 1
