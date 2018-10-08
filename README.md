@@ -39,7 +39,7 @@ cd jumpy
 python setup.py install
 ```
 
-## install other python dependencies
+### install other python dependencies
 
 ```
 pip install numpy
