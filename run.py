@@ -33,7 +33,7 @@ def numeric_test(keras_model, imported_model):
     for x in inputs:
         y_keras = keras_model.predict(x)
         y_sd = imported_model(x).numpy()
-        assert_allclose(y_sd, y_keras, 1e-5)
+        assert_allclose(y_sd, y_keras, 1e-3)
 
 
 def is_h5_file(file):
