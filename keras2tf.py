@@ -13,7 +13,7 @@ assert keras.backend.backend() == 'tensorflow'
 
 def keras_to_tf(keras_path, tf_path=None):
     if tf_path is None:
-        tf_path = keras_path[:-2] + 'pb.txt'
+        tf_path = keras_path[:-2] + 'pb'
     assert isinstance(keras_path, str)
     assert os.path.isfile(keras_path)
     temp_dir = "graph"
@@ -37,9 +37,4 @@ def keras_to_tf(keras_path, tf_path=None):
             tf_path,
             False,
             "")
-        '''
-        output_graph_def = tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), [output_node_name])
-        with tf.gfile.GFile(tf_path, "w") as f:
-            f.write(output_graph_def.SerializeToString())
-        '''
     return tf_path
