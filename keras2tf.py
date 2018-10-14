@@ -19,20 +19,20 @@ def keras_to_tf(keras_path, tf_path=None):
     assert isinstance(keras_path, str)
     assert os.path.isfile(keras_path)
     temp_dir = "graph"
-    '''
-    cd = os.path.dirname(os.path.abspath(__file__))
-    parent = os.path.dirname(cd)
-    temp_path = os.path.join(parent, temp_dir)
-    if os.path.isdir(temp_path):
-        shutil.rmtree(temp_path)
-    '''
     checkpoint_prefix = os.path.join(temp_dir, "saved_checkpoint")
     checkpoint_state_name = "checkpoint_state"
     with tf.Session() as sess:
         keras.backend.set_session(sess)
         sess.run(tf.global_variables_initializer())
         model = keras.models.load_model(keras_path)
-        output_node_name = model.output.name.split(':')[0]
+        inputs = model.input
+        if not isinstance(inputs, list):
+            inputs = [inputs]
+        inputs = [str(x.name).split(':')[0] for x in inputs]
+        outputs = model.outputs
+        if not isinstance(outputs, list):
+            outputs = [outputs]
+        outputs = [str(x.name).split(':')[0] for x in outputs]
         saver = tf.train.Saver()
         checkpoint_path = saver.save(K.get_session(), checkpoint_prefix, global_step=0, latest_filename=checkpoint_state_name)
         tf.train.write_graph(K.get_session().graph, os.path.dirname(tf_path), tf_path)
@@ -41,7 +41,7 @@ def keras_to_tf(keras_path, tf_path=None):
             "",
             False,
             checkpoint_path,
-            output_node_name,
+            outputs[0],
             "save/restore_all",
             "save/Const:0",
             tf_path,
@@ -49,4 +49,4 @@ def keras_to_tf(keras_path, tf_path=None):
             "")
         del sess
     
-    return tf_path
+    return tf_path, inputs, outputs
