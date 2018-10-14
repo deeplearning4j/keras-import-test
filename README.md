@@ -1,6 +1,6 @@
-# keras-samediff-test
+# keras-import-test
 
-Test suite for testing keras -> samediff model import.
+Test suite for testing keras -> samediff and keras -> dl4j model import.
 
 ## Installing dependencies
 
