@@ -19,6 +19,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 models_dir = os.path.join(current_dir, 'models')
 output_dir =  os.path.join(current_dir, 'output')
 
+if not os.path.isdir(output_dir):
+    os.mkdir(output_dir)
+
 
 def _replace_none(shape):
     return [x if x is not None else 32 for x in shape]
