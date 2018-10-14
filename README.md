@@ -64,7 +64,7 @@ It will contain:
 * `tests.json`
 * Bunch of `.npy` files
 
-`tests.json` contains a list of test cases. Each test case is a dictionary:`{inputs: [a.npy, b.npy,..], expected_outputs: [c.npy, d.npy,...]}`
+`tests.json` contains a list of test cases. Each test case is a dictionary:`{inputs: ['a.npy', 'b.npy',..], expected_outputs: ['c.npy', 'd.npy',...]}`
 
 
 
