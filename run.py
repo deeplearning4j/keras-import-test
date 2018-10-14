@@ -139,7 +139,8 @@ with click.progressbar(models_to_test) as models:
         pb = os.path.join(test_dir, test_name + '.pb')
         pb2txt(tf_pb, pb_txt)
         shutil.copyfile(tf_pb, pb)
-
+        h5file = os.path.join(test_dir, test_name + '.h5')
+        shutil.copyfile(model, h5file)
         tests = []
         for i, (inp_arrs, out_arrs) in enumerate(zip(inputs, expected_outputs)):
             test = {}
