@@ -68,7 +68,7 @@ def get_test_data(keras_model):
     return inputs, expected_outputs
 
 
-def numeric_test_sd(model, inputs, expected_outputs):
+def numeric_test(model, inputs, expected_outputs):
     for inps, exp_outs in zip(inputs, expected_outputs):
         outs = model(inps)
         if not isinstance(outs, list):
@@ -118,14 +118,7 @@ with click.progressbar(models_to_test) as models:
             error = [model, "Failed during converting keras model to tensorflow protobuff.", e]
             errors.append(error)
             continue
-        try:
-            imported_model = jp.TFModel(tf_pb, input_names, output_names)
-        except Exception as e:
-            num_failed += 1
-            overall_report.append(click.style(model, fg='red'))
-            error = [model, "Failed during import tensorflow model to SameDiff.", e]
-            errors.append(error)
-            continue
+
         sess = tf.Session()
         keras.backend.set_session(sess)
         keras_model = keras.models.load_model(model)
@@ -161,11 +154,35 @@ with click.progressbar(models_to_test) as models:
         with open(tests_json, 'w') as f:
             json.dump(tests, f)
         try:
-            numeric_test_sd(imported_model, inputs, expected_outputs)
+            sd_imported_model = jp.TFModel(tf_pb, input_names, output_names)
         except Exception as e:
             num_failed += 1
             overall_report.append(click.style(model, fg='red'))
-            error = [model, "Failed during numeric testing.", e]
+            error = [model, "Failed during importing tensorflow model to SameDiff.", e]
+            errors.append(error)
+            continue
+        try:
+            numeric_test(sd_imported_model, inputs, expected_outputs)
+        except Exception as e:
+            num_failed += 1
+            overall_report.append(click.style(model, fg='red'))
+            error = [model, "Failed during numeric testing of Samediff model", e]
+            errors.append(error)
+            continue
+        try:
+            dl4j_imported_model = jp.KerasModel(model)
+        except Exception as e:
+            num_failed += 1
+            overall_report.append(click.style(model, fg='red'))
+            error = [model, "Failed during importing keras model to Dl4j.", e]
+            errors.append(error)
+            continue
+        try:
+            numeric_test(dl4j_imported_model, inputs, expected_outputs)
+        except Exception as e:
+            num_failed += 1
+            overall_report.append(click.style(model, fg='red'))
+            error = [model, "Failed during numeric testing of Dl4j model", e]
             errors.append(error)
             continue
         num_passed += 1
