@@ -11,7 +11,7 @@ Test suite for testing keras -> samediff and keras -> dl4j model import.
 ### Install pydl4j
 
 ```bash
-git clone https://www.github.com/deeplerning4j/pydl4j.git
+git clone https://www.github.com/deeplearning4j/pydl4j.git
 cd pydl4j
 python setup.py install
 ```
@@ -34,7 +34,7 @@ pydl4j install
 ### install jumpy
 
 ```
-git clone https://www.github.com/deeplerning4j/jumpy.git
+git clone https://www.github.com/deeplearning4j/jumpy.git
 cd jumpy
 python setup.py install
 ```
